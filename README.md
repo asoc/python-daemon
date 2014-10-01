@@ -24,7 +24,7 @@ A well-behaved Unix daemon process is tricky to get right, but the required step
 ```python
 import daemon
 
-spam import do_main_program
+from spam import do_main_program
 
 with daemon.DaemonContext():
     do_main_program()
