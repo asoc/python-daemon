@@ -208,21 +208,9 @@ class DaemonContext(object):
             file named by `os.devnull`.
         """
 
-    def __init__(
-            self,
-            chroot_directory=None,
-            working_directory='/',
-            umask=0,
-            uid=None,
-            gid=None,
-            prevent_core=True,
-            detach_process=None,
-            files_preserve=None,
-            pidfile=None,
-            stdin=None,
-            stdout=None,
-            stderr=None,
-            signal_map=None, ):
+    def __init__(self, chroot_directory=None, working_directory='/', umask=0, uid=None, gid=None, prevent_core=True,
+            detach_process=None, files_preserve=None, pidfile=None, manage_pidfile=True,
+            stdin=None, stdout=None, stderr=None, signal_map=None):
         """ Set up a new instance. """
         self.chroot_directory = chroot_directory
         self.working_directory = working_directory
@@ -230,6 +218,7 @@ class DaemonContext(object):
         self.prevent_core = prevent_core
         self.files_preserve = files_preserve
         self.pidfile = pidfile
+        self.manage_pidfile = manage_pidfile
         self.stdin = stdin
         self.stdout = stdout
         self.stderr = stderr
@@ -343,7 +332,7 @@ class DaemonContext(object):
         redirect_stream(sys.stdout, self.stdout)
         redirect_stream(sys.stderr, self.stderr)
 
-        if self.pidfile is not None:
+        if self.pidfile is not None and self.manage_pidfile:
             self.pidfile.__enter__()
 
         self._is_open = True
@@ -374,7 +363,7 @@ class DaemonContext(object):
         if not self.is_open:
             return
 
-        if self.pidfile is not None:
+        if self.pidfile is not None and self.manage_pidfile:
             # Follow the interface for telling a context manager to exit,
             # <URL:http://docs.python.org/library/stdtypes.html#typecontextmanager>.
             self.pidfile.__exit__(None, None, None)
@@ -384,6 +373,34 @@ class DaemonContext(object):
     def __exit__(self, exc_type, exc_value, traceback):
         """ Context manager exit point. """
         self.close()
+
+    @property
+    def pid(self):
+        if not self.pidfile:
+            raise DaemonOSEnvironmentError('No PID file associated with daemon')
+
+        if self.manage_pidfile:
+            pid = self.pidfile.read_pid()
+        else:
+            try:
+                with open(self.pidfile) as fp:
+                    pid = int(fp.read().strip())
+            except (OSError, IOError):
+                return 0
+
+        return pid
+
+    @property
+    def alive(self):
+        if self.pid == 0:
+            return False
+
+        try:
+            os.kill(self.pid, 0)
+        except OSError:
+            return False
+
+        return True
 
     def terminate(self, signal_number, stack_frame):
         """ Signal handler for end-process signals.

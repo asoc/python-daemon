@@ -43,17 +43,6 @@ class DaemonRunnerStopFailureError(RuntimeError, DaemonRunnerError):
     """ Raised when failure stopping DaemonRunner. """
 
 
-class _FakeSTDIN(object):
-    def read(self):
-        raise EOFError()
-
-    def readline(self):
-        raise EOFError()
-
-    def fileno(self):
-        return sys.stdin.fileno()
-
-
 class DaemonRunner(object):
     """ Controller for a callable running in a separate background process.
 
@@ -64,7 +53,7 @@ class DaemonRunner(object):
         * 'restart': Stop, then start.
     """
 
-    def __init__(self, stdout=None, stderr=None, stdin=None, pidfile=None, pidfile_timeout=None):
+    def __init__(self, stdout=None, stderr=None, stdin=None, pidfile=None, pidfile_timeout=None, manage_pidfile=True):
         """ Set up the parameters of a new runner.
 
             * `stdin`, `stdout`, `stderr`: Filesystem
@@ -72,7 +61,9 @@ class DaemonRunner(object):
               `sys.stdout`, `sys.stderr`.
 
               If `stdout` or `stderr` are `None`, then will write to `os.devnull`
-              If `stdin` is `None`, a `_FakeSTDIN` instance will be used
+              If they are `file` objects those will be used
+                 (only recommended for direct `run()` calls)
+              If `stdin` is `None`, `sys.stdin` will be used.
 
             * `pidfile`: Absolute filesystem path to a file that
               will be used as the PID file for the daemon. If
@@ -82,21 +73,44 @@ class DaemonRunner(object):
               timeout value supplied to the runner's PID lock file.
         """
         self.daemon_context = DaemonContext()
-        self.daemon_context.stdin = open(stdin, 'r') if stdin else sys.stdin
-        self.daemon_context.stdout = open(stdout if stdout else os.devnull, 'w+')
-        self.daemon_context.stderr = open(stderr if stderr else os.devnull, 'w+')
 
-        self.pidfile = None
-        if pidfile:
+        self.__set_std('stdin', stdin, sys.stdin, 'r')
+        self.__set_std('stdout', stdout, os.devnull, 'w+')
+        self.__set_std('stderr', stderr, os.devnull, 'w+')
+
+        self.pidfile = pidfile
+        self.manage_pidfile = manage_pidfile
+
+        if pidfile and manage_pidfile:
             self.pidfile = make_pidlockfile(pidfile, pidfile_timeout)
+
         self.daemon_context.pidfile = self.pidfile
+        self.daemon_context.manage_pidfile = self.manage_pidfile
+
+    def __set_std(self, name, value, default, mode):
+        if value is None or hasattr(value, 'read'):
+            setattr(self.daemon_context, name, value or default)
+            return
+
+        setattr(
+            self.daemon_context, name,
+            open(value if isinstance(value, six.string_types) and value else default, mode)
+        )
+
+    @property
+    def pid(self):
+        return self.daemon_context.pid
+
+    @property
+    def alive(self):
+        return self.daemon_context.alive
 
     def run(self):
         pass
 
     def start(self):
         """ Open the daemon context and run the application. """
-        if is_pidfile_stale(self.pidfile):
+        if self.manage_pidfile and is_pidfile_stale(self.pidfile):
             self.pidfile.break_lock()
 
         try:
@@ -113,7 +127,8 @@ class DaemonRunner(object):
         if not self.pidfile:
             return
 
-        pid = self.pidfile.read_pid()
+        pid = self.pid
+
         try:
             os.kill(pid, signal.SIGTERM)
         except OSError as exc:
@@ -123,6 +138,13 @@ class DaemonRunner(object):
         """ Exit the daemon process specified in the current PID file. """
         if not self.pidfile:
             raise DaemonRunnerStopFailureError('Cannot stop daemon with no PID file')
+
+        if not self.alive:
+            return
+
+        if not self.manage_pidfile:
+            self.__terminate_daemon_process()
+            return
 
         if not self.pidfile.is_locked():
             raise DaemonRunnerStopFailureError('PID file {} not locked'.format(self.pidfile.path))
