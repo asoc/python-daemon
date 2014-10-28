@@ -16,6 +16,7 @@ from __future__ import unicode_literals, print_function, absolute_import
 
 import errno
 import os
+import six
 import stat
 
 from lockfile.linklockfile import LinkLockFile, LockFailed, AlreadyLocked
@@ -150,7 +151,11 @@ def write_pid_to_pidfile(pidfile_path):
     #   would contain three characters: two, five, and newline.
 
     try:
-        with open(pidfile_path, 'x') as fp:
+        if six.PY2:
+            if os.path.exists(pidfile_path):
+                raise OSError('PID file {} already exists'.format(pidfile_path))
+
+        with open(pidfile_path, 'x' if six.PY3 else 'w') as fp:
             fp.write('{:d}{}'.format(os.getpid(), os.linesep))
     except (OSError, IOError):
         raise
