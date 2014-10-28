@@ -42,6 +42,7 @@ setup(
     ],
     install_requires=[
         'setuptools',
+        'pbr',
         'lockfile >= 0.7',
     ],
 
