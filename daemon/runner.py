@@ -74,7 +74,7 @@ class DaemonRunner(object):
         """
         self.daemon_context = DaemonContext()
 
-        self.__set_std('stdin', stdin, sys.stdin, 'r')
+        self.__set_std('stdin', stdin, os.devnull, 'r')
         self.__set_std('stdout', stdout, os.devnull, 'w+')
         self.__set_std('stderr', stderr, os.devnull, 'w+')
 
@@ -88,13 +88,18 @@ class DaemonRunner(object):
         self.daemon_context.manage_pidfile = self.manage_pidfile
 
     def __set_std(self, name, value, default, mode):
+        def get_default():
+            if default and not hasattr(default, 'read'):
+                return open(default, mode)
+            return default
+
         if value is None or hasattr(value, 'read'):
-            setattr(self.daemon_context, name, value or default)
+            setattr(self.daemon_context, name, value or get_default())
             return
 
         setattr(
             self.daemon_context, name,
-            open(value if isinstance(value, six.string_types) and value else default, mode)
+            open(value, mode) if isinstance(value, six.string_types) and value else get_default()
         )
 
     @property
@@ -114,13 +119,12 @@ class DaemonRunner(object):
             self.pidfile.break_lock()
 
         try:
-            self.daemon_context.open()
+            with self.daemon_context:
+                sys.exit(self.run())
         except pidlockfile.AlreadyLocked:
             raise DaemonRunnerStartFailureError('PID file {} already locked'.format(self.pidfile.path))
         except SystemExit:
             return
-
-        sys.exit(self.run())
 
     def __terminate_daemon_process(self):
         """ Terminate the daemon process specified in the current PID file. """

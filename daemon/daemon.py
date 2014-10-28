@@ -388,7 +388,7 @@ class DaemonContext(object):
             except (OSError, IOError):
                 return 0
 
-        return pid
+        return pid or 0
 
     @property
     def alive(self):
