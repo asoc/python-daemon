@@ -53,7 +53,7 @@ class DaemonRunner(object):
         * 'restart': Stop, then start.
     """
 
-    def __init__(self, stdout=None, stderr=None, stdin=None, pidfile=None, pidfile_timeout=None, manage_pidfile=True):
+    def __init__(self, stdout=None, stderr=None, stdin=None, pidfile=None, pidfile_timeout=None, manage_pidfile=True, context_kwargs=None):
         """ Set up the parameters of a new runner.
 
             * `stdin`, `stdout`, `stderr`: Filesystem
@@ -72,7 +72,7 @@ class DaemonRunner(object):
             * `pidfile_timeout`: Used as the default acquisition
               timeout value supplied to the runner's PID lock file.
         """
-        self.daemon_context = DaemonContext()
+        self.daemon_context = DaemonContext(**context_kwargs or {})
 
         self.__set_std('stdin', stdin, os.devnull, 'r')
         self.__set_std('stdout', stdout, os.devnull, 'w+')
@@ -113,18 +113,20 @@ class DaemonRunner(object):
     def run(self):
         pass
 
-    def start(self):
+    def start(self, delay_after_fork=None):
         """ Open the daemon context and run the application. """
         if self.manage_pidfile and is_pidfile_stale(self.pidfile):
             self.pidfile.break_lock()
 
         try:
             with self.daemon_context:
-                sys.exit(self.run())
+                if delay_after_fork:
+                    time.sleep(delay_after_fork)
+                os._exit(self.run() or 0)
         except pidlockfile.AlreadyLocked:
             raise DaemonRunnerStartFailureError('PID file {} already locked'.format(self.pidfile.path))
         except SystemExit:
-            return
+            pass
 
     def __terminate_daemon_process(self):
         """ Terminate the daemon process specified in the current PID file. """
