@@ -22,7 +22,8 @@ import errno
 import os
 import signal
 import six
-import sys
+import time
+
 
 from . import pidlockfile, DaemonContext
 
@@ -102,13 +103,8 @@ class DaemonRunner(object):
             open(value, mode) if isinstance(value, six.string_types) and value else get_default()
         )
 
-    @property
-    def pid(self):
-        return self.daemon_context.pid
-
-    @property
-    def alive(self):
-        return self.daemon_context.alive
+    def __getattr__(self, item):
+        return getattr(self.daemon_context, item)
 
     def run(self):
         pass
