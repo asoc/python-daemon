@@ -104,7 +104,7 @@ class DaemonRunner(object):
         )
 
     def __getattr__(self, item):
-        return getattr(self.daemon_context, item)
+            return getattr(self.daemon_context, item)
 
     def run(self):
         pass
@@ -118,7 +118,13 @@ class DaemonRunner(object):
             with self.daemon_context:
                 if delay_after_fork:
                     time.sleep(delay_after_fork)
-                os._exit(self.run() or 0)
+                try:
+                    os._exit(self.run() or 0)
+                except SystemExit as err:
+                    code = err.code or 0
+                    if isinstance(code, six.string_types):
+                        code = 1
+                    os._exit(code)
         except pidlockfile.AlreadyLocked:
             raise DaemonRunnerStartFailureError('PID file {} already locked'.format(self.pidfile.path))
         except SystemExit:
