@@ -17,7 +17,7 @@
 import os
 import textwrap
 
-from setuptools import setup, find_packages
+from setuptools import setup, find_packages, unicode_literals
 
 import daemon
 
@@ -52,7 +52,7 @@ setup(
     author_email=daemon.AUTHOR_EMAIL,
     description=short_description,
     license=daemon.LICENSE,
-    keywords=u'daemon fork unix'.split(),
+    keywords='daemon fork unix'.split(),
     url=daemon.URL,
     long_description=long_description,
     classifiers=[
