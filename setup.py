@@ -10,14 +10,14 @@
 # under the terms of the Python Software Foundation License, version 2 or
 # later as published by the Python Software Foundation.
 # No warranty expressed or implied. See the file LICENSE.PSF-2 for details.
-
+from __future__ import unicode_literals, print_function, absolute_import, division
 """ Distribution setup for python-daemon library.
     """
 
 import os
 import textwrap
 
-from setuptools import setup, find_packages, unicode_literals
+from setuptools import setup, find_packages
 
 import daemon
 
