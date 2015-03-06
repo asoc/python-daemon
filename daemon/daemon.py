@@ -612,9 +612,12 @@ def is_process_started_by_superserver():
         ``False``.
     
         """
-    stdin_fd = sys.__stdin__.fileno()
-    if is_socket(stdin_fd):
-        return True
+    try:
+        stdin_fd = sys.__stdin__.fileno()
+        if is_socket(stdin_fd):
+            return True
+    except ValueError:
+        pass
 
     return False
 
@@ -723,5 +726,9 @@ def set_signal_handlers(signal_handler_map):
         The `signal_handler_map` argument is a map from signal number
         to signal handler. See the `signal` module for details.
     """
-    for signal_number, handler in signal_handler_map.items():
-        signal.signal(signal_number, handler)
+    try:
+        for signal_number, handler in signal_handler_map.items():
+            signal.signal(signal_number, handler)
+    except ValueError as err:
+        if 'main thread' not in str(err):
+            raise
