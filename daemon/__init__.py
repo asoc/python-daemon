@@ -55,7 +55,7 @@ from types import MethodType
 from .daemon import DaemonContext
 
 
-VERSION = '2.1'
+VERSION = '2.1.1'
 LICENSE = 'PSF-2+'
 URL = 'https://github.com/asoc/python-daemon'
 
