@@ -10,7 +10,7 @@
 # under the terms of the Python Software Foundation License, version 2 or
 # later as published by the Python Software Foundation.
 # No warranty expressed or implied. See the file LICENSE.PSF-2 for details.
-
+from __future__ import unicode_literals, print_function, absolute_import, division
 """ Distribution setup for python-daemon library.
     """
 
@@ -52,7 +52,7 @@ setup(
     author_email=daemon.AUTHOR_EMAIL,
     description=short_description,
     license=daemon.LICENSE,
-    keywords=u'daemon fork unix'.split(),
+    keywords='daemon fork unix'.split(),
     url=daemon.URL,
     long_description=long_description,
     classifiers=[
