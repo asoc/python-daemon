@@ -28,7 +28,7 @@ import six
 import socket
 import sys
 
-
+
 class DaemonError(Exception):
     """ Base exception class for errors from this module. """
 
@@ -411,6 +411,9 @@ class DaemonContext(object):
 
             * Raise a ``SystemExit`` exception explaining the signal.
         """
+
+        # Force atexit functions to run, as they don't seem to be when SystemExit is raised.
+        atexit._run_exitfuncs()
         raise SystemExit('Terminating on signal {:d}'.format(signal_number))
 
     def _get_exclude_file_descriptors(self):
