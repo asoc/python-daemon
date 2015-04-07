@@ -1,3 +1,34 @@
+2015-04-07  Alex Honeywell  <alex.honeywell@gmail.com>
+
+    Version 2.1.3 released.
+
+    * When creating a `DaemonRunner`, If `stdout` and `stderr` are the same then set the attribute to the same value
+      instead of processing it again. ie. don't open the same file twice...
+
+2015-03-31  Alex Honeywell  <alex.honeywell@gmail.com>
+
+    Version 2.1.2 released.
+
+    * Call `atexit._run_exitfuncs()` explicitly when terminating from SIGTERM.
+
+2015-03-06  Alex Honeywell  <alex.honeywell@gmail.com>
+
+    Version 2.1.1 released.
+
+    * `DaemonRunner.start` now catches `SystemExit` from the context run prevent executing code from the caller.
+    * Catch `ValueError` if message contains 'main thread' which happens if we try to start a daemon from an already
+      daemonized thread. Probably an iffy operation but seems to work.
+
+2014-10-30  Alex Honeywell  <alex.honeywell@gmail.com>
+
+    Version 2.1 released.
+
+    * Using `six` for PY2/PY3 support.
+    * `DaemonRunner` searches its context for attributes if it doesn't set them itself.
+    * Added `context_kwargs` argument to `DaemonRunner`
+    * Added `delay_after_fork` (seconds) argument to `DaemonRunner.start`
+    * Added support for externally managed PID files.
+
 2014-10-01  Alex Honeywell  <alex.honeywell@gmail.com>
 
     Version 2.0 released.

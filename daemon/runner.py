@@ -77,7 +77,10 @@ class DaemonRunner(object):
 
         self.__set_std('stdin', stdin, os.devnull, 'r')
         self.__set_std('stdout', stdout, os.devnull, 'w+')
-        self.__set_std('stderr', stderr, os.devnull, 'w+')
+        if stdout == stderr:
+            self.__set_std('stderr', self.stdout, os.devnull, 'w+')
+        else:
+            self.__set_std('stderr', stderr, os.devnull, 'w+')
 
         self.pidfile = pidfile
         self.manage_pidfile = manage_pidfile
