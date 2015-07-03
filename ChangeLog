@@ -1,3 +1,9 @@
+2015-07-03  Alex Honeywell  <alex.honeywell@gmail.com>
+
+    Version 2.1.4 released.
+
+    * Run `os.waitpid()` on first child process before exiting.
+
 2015-04-07  Alex Honeywell  <alex.honeywell@gmail.com>
 
     Version 2.1.3 released.

@@ -555,7 +555,7 @@ def detach_process_context():
         Addison-Wesley.
     """
 
-    def fork_then_exit_parent(error_message, exit_func=os._exit):
+    def fork_then_exit_parent(error_message, second_fork=False):
         """ Fork a child process, then exit the parent process.
 
             If the fork fails, raise a ``DaemonProcessDetachError``
@@ -565,13 +565,17 @@ def detach_process_context():
         try:
             pid = os.fork()
             if pid:
-                exit_func(0)
+                if second_fork:
+                    os._exit(0)
+                else:
+                    os.waitpid(pid, 0)
+                    sys.exit(0)
         except OSError as exc:
             raise DaemonProcessDetachError('{}: [{:d}] {}'.format(error_message, exc.errno, exc.strerror))
 
-    fork_then_exit_parent(error_message='Failed first fork', exit_func=sys.exit)
+    fork_then_exit_parent(error_message='Failed first fork')
     os.setsid()
-    fork_then_exit_parent(error_message='Failed second fork')
+    fork_then_exit_parent(error_message='Failed second fork', second_fork=True)
 
 
 def is_process_started_by_init():
@@ -641,12 +645,18 @@ def is_detach_process_context_required():
     return True
 
 
-def close_file_descriptor_if_open(fd):
+def close_file_descriptor_if_open(fd, check_fd_urandom):
     """ Close a file descriptor if already open.
 
         Close the file descriptor `fd`, suppressing an error in the
         case the file was not open.
     """
+    try:
+        if check_fd_urandom and os.path.sameopenfile(fd, check_fd_urandom):
+            return
+    except OSError:
+        pass
+
     try:
         os.close(fd)
     except OSError as exc:
@@ -680,9 +690,10 @@ def close_all_open_files(exclude=set()):
         close.
     """
     maxfd = get_maximum_file_descriptors()
+    check_fd_urandom = os.open("/dev/urandom", os.O_RDONLY) if sys.version_info[0:3] == (3, 4, 0) else None
     for fd in reversed(range(maxfd)):
         if fd not in exclude:
-            close_file_descriptor_if_open(fd)
+            close_file_descriptor_if_open(fd, check_fd_urandom)
 
 
 def redirect_stream(system_stream, target_stream):
