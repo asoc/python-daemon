@@ -11,35 +11,45 @@
 # later as published by the Python Software Foundation.
 # No warranty expressed or implied. See the file LICENSE.PSF-2 for details.
 from __future__ import unicode_literals, print_function, absolute_import, division
-""" Distribution setup for python-daemon library.
-    """
 
+import fileinput
 import os
 import textwrap
 
 from setuptools import setup, find_packages
 
-import daemon
+
+__version = os.path.join('daemon', '_version.py')
+exec(open(__version).read())
 
 distribution_name = 'python-daemon'
 
-short_description, long_description = (
-    textwrap.dedent(d).strip()
-    for d in daemon.__doc__.split(''.join([os.linesep, os.linesep]), 1)
-)
+__init = os.path.join('daemon', '__init__.py')
+__short_desc = ''
+__long_desc = []
+__is_doc = True
+
+for line in fileinput.input(__init):
+    if line == '"""':
+        break
+
+    if line.startswith('"""'):
+        __is_doc = True
+        __short_desc = line.lstrip('"')
+    elif __is_doc:
+        __long_desc.append(line)
+
+__long_desc = textwrap.dedent(os.linesep.join(__long_desc)).strip()
 
 
 setup(
     name=distribution_name,
-    version=daemon.VERSION,
+    version=VERSION,
     packages=find_packages(exclude=['test']),
 
     # setuptools metadata
     zip_safe=False,
-    test_suite='test.suite',
-    tests_require=[
-        'MiniMock >= 1.2.2',
-    ],
+
     install_requires=[
         'setuptools',
         'pbr',
@@ -48,13 +58,13 @@ setup(
     ],
 
     # PyPI metadata
-    author=daemon.AUTHOR,
-    author_email=daemon.AUTHOR_EMAIL,
-    description=short_description,
-    license=daemon.LICENSE,
+    author=AUTHOR,
+    author_email=AUTHOR_EMAIL,
+    description=__short_desc,
+    license=LICENSE,
     keywords='daemon fork unix'.split(),
-    url=daemon.URL,
-    long_description=long_description,
+    url=URL,
+    long_description=__long_desc,
     classifiers=[
         # Reference: http://pypi.python.org/pypi?%3Aaction=list_classifiers
         'Development Status :: 4 - Beta',

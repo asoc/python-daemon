@@ -3,9 +3,9 @@
 # daemon/__init__.py
 # Part of python-daemon, an implementation of PEP 3143.
 #
-# Copyright © 2014 Alex Honeywell
-# Copyright © 2009–2010 Ben Finney <ben+python@benfinney.id.au>
-# Copyright © 2006 Robert Niederreiter
+# Copyright 2014 Alex Honeywell
+# Copyright 2009-2010 Ben Finney <ben+python@benfinney.id.au>
+# Copyright 2006 Robert Niederreiter
 #
 # This is free software: you may copy, modify, and/or distribute this work
 # under the terms of the Python Software Foundation License, version 2 or
@@ -47,21 +47,12 @@
         # Continue execution of current process
         do_other_stuff()
 """
-
 from __future__ import unicode_literals, print_function, absolute_import
 
 from types import MethodType
 
 from .daemon import DaemonContext
 
-
-VERSION = '2.1.4'
-LICENSE = 'PSF-2+'
-URL = 'https://github.com/asoc/python-daemon'
-
-AUTHOR = 'Alex Honeywell'
-AUTHOR_EMAIL = 'alex.honeywell@gmail.com'
-
 
 def create_daemon(run, *args, **kwargs):
     """ Create a DaemonRunner with the given run method. """

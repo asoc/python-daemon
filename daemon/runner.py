@@ -74,6 +74,7 @@ class DaemonRunner(object):
               timeout value supplied to the runner's PID lock file.
         """
         self.daemon_context = DaemonContext(**context_kwargs or {})
+        self.daemonized = False
 
         self.__set_std('stdin', stdin, os.devnull, 'r')
         self.__set_std('stdout', stdout, os.devnull, 'w+')
@@ -122,6 +123,7 @@ class DaemonRunner(object):
                 if delay_after_fork:
                     time.sleep(delay_after_fork)
                 try:
+                    self.daemonized = True
                     os._exit(self.run() or 0)
                 except SystemExit as err:
                     code = err.code or 0
