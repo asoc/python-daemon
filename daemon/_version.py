@@ -10,7 +10,9 @@
 # later as published by the Python Software Foundation.
 # No warranty expressed or implied. See the file LICENSE.PSF-2 for details.
 
-VERSION = '2.1.4'
+from __future__ import unicode_literals, print_function, absolute_import
+
+VERSION = '2.1.5'
 LICENSE = 'PSF-2+'
 URL = 'https://github.com/asoc/python-daemon'
 
