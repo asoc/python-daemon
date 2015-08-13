@@ -135,7 +135,7 @@ class DaemonRunner(object):
         except SystemExit:
             pass
 
-    def __terminate_daemon_process(self):
+    def __terminate_daemon_process(self, sig=None):
         """ Terminate the daemon process specified in the current PID file. """
         if not self.pidfile:
             return
@@ -143,11 +143,11 @@ class DaemonRunner(object):
         pid = self.pid
 
         try:
-            os.kill(pid, signal.SIGTERM)
+            os.kill(pid, signal.SIGTERM if sig is None else sig)
         except OSError as exc:
             raise DaemonRunnerStopFailureError('Failed to terminate {:d}: {!s}'.format(pid, exc))
 
-    def stop(self):
+    def stop(self, sig=None):
         """ Exit the daemon process specified in the current PID file. """
         if not self.pidfile:
             raise DaemonRunnerStopFailureError('Cannot stop daemon with no PID file')
@@ -156,7 +156,7 @@ class DaemonRunner(object):
             return
 
         if not self.manage_pidfile:
-            self.__terminate_daemon_process()
+            self.__terminate_daemon_process(sig)
             return
 
         if not self.pidfile.is_locked():
@@ -165,7 +165,7 @@ class DaemonRunner(object):
         if is_pidfile_stale(self.pidfile):
             self.pidfile.break_lock()
         else:
-            self.__terminate_daemon_process()
+            self.__terminate_daemon_process(sig)
 
     def restart(self):
         """ Stop, then start. """
