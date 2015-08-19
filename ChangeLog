@@ -1,3 +1,18 @@
+2015-08-19  Alex Honeywell  <alex.honeywell@gmail.com>
+
+    Version 2.1.6 released.
+
+    * `DaemonRunner.stop()` now accepts a `sig` argument to send a signal other than `SIGTERM`
+    * Added `force_detach` keyword-argument to `DaemonRunner` to force the `DaemonContext` to detach
+      regardless of process parent.
+
+2015-08-12  Alex Honeywell  <alex.honeywell@gmail.com>
+
+    Version 2.1.5 released.
+
+    * Fixed some issues when running `setup.py` in PY2/PY3
+    * Added `daemonized` flag to `DaemonRunner`, and set to `True` when `start()` is called.
+
 2015-07-03  Alex Honeywell  <alex.honeywell@gmail.com>
 
     Version 2.1.4 released.
@@ -21,7 +36,7 @@
 
     Version 2.1.1 released.
 
-    * `DaemonRunner.start` now catches `SystemExit` from the context run prevent executing code from the caller.
+    * `DaemonRunner.start()` now catches `SystemExit` from the context run prevent executing code from the caller.
     * Catch `ValueError` if message contains 'main thread' which happens if we try to start a daemon from an already
       daemonized thread. Probably an iffy operation but seems to work.
 

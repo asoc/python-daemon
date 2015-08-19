@@ -12,7 +12,7 @@
 
 from __future__ import unicode_literals, print_function, absolute_import
 
-VERSION = '2.1.5'
+VERSION = '2.1.6'
 LICENSE = 'PSF-2+'
 URL = 'https://github.com/asoc/python-daemon'
 

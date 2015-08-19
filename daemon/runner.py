@@ -54,7 +54,7 @@ class DaemonRunner(object):
         * 'restart': Stop, then start.
     """
 
-    def __init__(self, stdout=None, stderr=None, stdin=None, pidfile=None, pidfile_timeout=None, manage_pidfile=True, context_kwargs=None):
+    def __init__(self, stdout=None, stderr=None, stdin=None, pidfile=None, pidfile_timeout=None, manage_pidfile=True, context_kwargs=None, force_detach=False):
         """ Set up the parameters of a new runner.
 
             * `stdin`, `stdout`, `stderr`: Filesystem
@@ -73,7 +73,10 @@ class DaemonRunner(object):
             * `pidfile_timeout`: Used as the default acquisition
               timeout value supplied to the runner's PID lock file.
         """
-        self.daemon_context = DaemonContext(**context_kwargs or {})
+        context_kwargs = context_kwargs or {}
+        if force_detach:
+            context_kwargs['detach_process'] = True
+        self.daemon_context = DaemonContext(**context_kwargs)
         self.daemonized = False
 
         self.__set_std('stdin', stdin, os.devnull, 'r')
