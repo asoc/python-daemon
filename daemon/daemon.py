@@ -328,6 +328,13 @@ class DaemonContext(object):
         exclude_fds = self._get_exclude_file_descriptors()
         close_all_open_files(exclude=exclude_fds)
 
+        self.stdin = set_std(self.stdin, sys.stdin, 'r')
+
+        same_std_out_err = self.stdout == self.stderr
+
+        self.stdout = set_std(self.stdout, sys.stdout, 'w+')
+        self.stderr = self.stdout if same_std_out_err else set_std(self.stderr, sys.stderr, 'w+')
+
         redirect_stream(sys.stdin, self.stdin)
         redirect_stream(sys.stdout, self.stdout)
         redirect_stream(sys.stderr, self.stderr)
@@ -694,6 +701,18 @@ def close_all_open_files(exclude=set()):
     for fd in reversed(range(maxfd)):
         if fd not in exclude:
             close_file_descriptor_if_open(fd, check_fd_urandom)
+
+
+def set_std(destination, default, mode):
+    def get_default():
+        if default and not hasattr(default, 'read'):
+            return open(default, mode)
+        return default
+
+    if destination is None or hasattr(destination, 'read'):
+        return destination or get_default()
+
+    return open(destination, mode) if isinstance(destination, six.string_types) and destination else get_default()
 
 
 def redirect_stream(system_stream, target_stream):

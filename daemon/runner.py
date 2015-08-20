@@ -22,6 +22,7 @@ import errno
 import os
 import signal
 import six
+import sys
 import time
 
 
@@ -76,15 +77,13 @@ class DaemonRunner(object):
         context_kwargs = context_kwargs or {}
         if force_detach:
             context_kwargs['detach_process'] = True
+
+        context_kwargs.setdefault('stdin', stdin or sys.stdin)
+        context_kwargs.setdefault('stdout', stdout or os.devnull)
+        context_kwargs.setdefault('stderr', stderr or os.devnull)
+
         self.daemon_context = DaemonContext(**context_kwargs)
         self.daemonized = False
-
-        self.__set_std('stdin', stdin, os.devnull, 'r')
-        self.__set_std('stdout', stdout, os.devnull, 'w+')
-        if stdout == stderr:
-            self.__set_std('stderr', self.stdout, os.devnull, 'w+')
-        else:
-            self.__set_std('stderr', stderr, os.devnull, 'w+')
 
         self.pidfile = pidfile
         self.manage_pidfile = manage_pidfile
@@ -94,21 +93,6 @@ class DaemonRunner(object):
 
         self.daemon_context.pidfile = self.pidfile
         self.daemon_context.manage_pidfile = self.manage_pidfile
-
-    def __set_std(self, name, value, default, mode):
-        def get_default():
-            if default and not hasattr(default, 'read'):
-                return open(default, mode)
-            return default
-
-        if value is None or hasattr(value, 'read'):
-            setattr(self.daemon_context, name, value or get_default())
-            return
-
-        setattr(
-            self.daemon_context, name,
-            open(value, mode) if isinstance(value, six.string_types) and value else get_default()
-        )
 
     def __getattr__(self, item):
             return getattr(self.daemon_context, item)
