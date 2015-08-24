@@ -78,7 +78,7 @@ class DaemonRunner(object):
         if force_detach:
             context_kwargs['detach_process'] = True
 
-        context_kwargs.setdefault('stdin', stdin or sys.stdin)
+        context_kwargs.setdefault('stdin', stdin or os.devnull)
         context_kwargs.setdefault('stdout', stdout or os.devnull)
         context_kwargs.setdefault('stderr', stderr or os.devnull)
 

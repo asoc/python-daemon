@@ -29,6 +29,18 @@ import socket
 import sys
 
 
+_default_std_info = {
+    'wb+': {
+        'attr': 'write',
+        'buffering': 0,
+    },
+    'r': {
+        'attr': 'read',
+        'buffering': -1,
+    }
+}
+
+
 class DaemonError(Exception):
     """ Base exception class for errors from this module. """
 
@@ -216,7 +228,7 @@ class DaemonContext(object):
         self.working_directory = working_directory
         self.umask = umask
         self.prevent_core = prevent_core
-        self.files_preserve = files_preserve
+        self.files_preserve = files_preserve or []
         self.pidfile = pidfile
         self.manage_pidfile = manage_pidfile
         self.stdin = stdin
@@ -328,12 +340,12 @@ class DaemonContext(object):
         exclude_fds = self._get_exclude_file_descriptors()
         close_all_open_files(exclude=exclude_fds)
 
-        self.stdin = set_std(self.stdin, sys.stdin, 'r')
+        self.stdin = set_std(self.stdin, os.devnull, 'r')
 
         same_std_out_err = self.stdout == self.stderr
 
-        self.stdout = set_std(self.stdout, sys.stdout, 'w+')
-        self.stderr = self.stdout if same_std_out_err else set_std(self.stderr, sys.stderr, 'w+')
+        self.stdout = set_std(self.stdout, os.devnull, 'wb+')
+        self.stderr = self.stdout if same_std_out_err else set_std(self.stderr, os.devnull, 'wb+')
 
         redirect_stream(sys.stdin, self.stdin)
         redirect_stream(sys.stdout, self.stdout)
@@ -704,15 +716,18 @@ def close_all_open_files(exclude=set()):
 
 
 def set_std(destination, default, mode):
+    attr_check = _default_std_info[mode]['attr']
+    buffering = _default_std_info[mode]['buffering']
+
     def get_default():
-        if default and not hasattr(default, 'read'):
-            return open(default, mode)
+        if default and not hasattr(default, attr_check):
+            return open(default, mode, buffering=buffering)
         return default
 
-    if destination is None or hasattr(destination, 'read'):
+    if destination is None or hasattr(destination, attr_check):
         return destination or get_default()
 
-    return open(destination, mode) if isinstance(destination, six.string_types) and destination else get_default()
+    return open(destination, mode, buffering=buffering) if isinstance(destination, six.string_types) and destination else get_default()
 
 
 def redirect_stream(system_stream, target_stream):
