@@ -28,6 +28,8 @@ import six
 import socket
 import sys
 
+from six.moves import StringIO
+
 
 _default_std_info = {
     'wb+': {
@@ -347,9 +349,8 @@ class DaemonContext(object):
         self.stdout = set_std(self.stdout, os.devnull, 'wb+')
         self.stderr = self.stdout if same_std_out_err else set_std(self.stderr, os.devnull, 'wb+')
 
-        redirect_stream(sys.stdin, self.stdin)
-        redirect_stream(sys.stdout, self.stdout)
-        redirect_stream(sys.stderr, self.stderr)
+        for std in ['stdin', 'stdout', 'stderr']:
+            redirect_stream(std, getattr(self, std))
 
         if self.pidfile is not None and self.manage_pidfile:
             self.pidfile.__enter__()
@@ -730,7 +731,7 @@ def set_std(destination, default, mode):
     return open(destination, mode, buffering=buffering) if isinstance(destination, six.string_types) and destination else get_default()
 
 
-def redirect_stream(system_stream, target_stream):
+def redirect_stream(name, target_stream):
     """ Redirect a system stream to a specified file.
 
         `system_stream` is a standard system stream such as
@@ -745,7 +746,13 @@ def redirect_stream(system_stream, target_stream):
     else:
         target_fd = target_stream.fileno()
 
-    os.dup2(target_fd, system_stream.fileno())
+    # dup2 fails on StringIO instances, so if we detect that,
+    # force back to the actual stream
+
+    if isinstance(getattr(sys, name), StringIO):
+        setattr(sys, name, getattr(sys, '__' + name + '__'))
+
+    os.dup2(target_fd, getattr(sys, name).fileno())
 
 
 def make_default_signal_map():

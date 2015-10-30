@@ -1,3 +1,10 @@
+2015-10-30  Alex Honeywell  <alex.honeywell@gmail.com>
+
+    Version 2.1.8 released.
+
+    * Fixed an issue in `redirect_streams` when the system streams were already changed to
+      a StringIO instance.
+
 2015-08-24  Alex Honeywell  <alex.honeywell@gmail.com>
 
     Version 2.1.7 released.
