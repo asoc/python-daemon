@@ -57,7 +57,7 @@ class DaemonRunner(object):
 
     def __init__(self, stdout=None, stderr=None, stdin=None, pidfile=None,
                  pidfile_timeout=None, manage_pidfile=True,
-                 context_kwargs=None, force_detach=False):
+                 context_kwargs=None, force_detach=False, process_name=None):
         """ Set up the parameters of a new runner.
 
             * `stdin`, `stdout`, `stderr`: Filesystem
@@ -79,6 +79,8 @@ class DaemonRunner(object):
         context_kwargs = context_kwargs or {}
         if force_detach:
             context_kwargs['detach_process'] = True
+
+        context_kwargs.setdefault('process_name', process_name)
 
         context_kwargs.setdefault('stdin', stdin or os.devnull)
         context_kwargs.setdefault('stdout', stdout or os.devnull)
