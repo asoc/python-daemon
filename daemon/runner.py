@@ -55,7 +55,9 @@ class DaemonRunner(object):
         * 'restart': Stop, then start.
     """
 
-    def __init__(self, stdout=None, stderr=None, stdin=None, pidfile=None, pidfile_timeout=None, manage_pidfile=True, context_kwargs=None, force_detach=False):
+    def __init__(self, stdout=None, stderr=None, stdin=None, pidfile=None,
+                 pidfile_timeout=None, manage_pidfile=True,
+                 context_kwargs=None, force_detach=False):
         """ Set up the parameters of a new runner.
 
             * `stdin`, `stdout`, `stderr`: Filesystem

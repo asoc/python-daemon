@@ -54,6 +54,7 @@ setup(
         'setuptools',
         'pbr',
         'lockfile >= 0.7',
+        'setproctitle',
         'six',
     ],
 

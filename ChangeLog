@@ -1,3 +1,9 @@
+2016-01-27  Alex Honeywell  <alex.honeywell@gmail.com>
+
+    Version 2.1.9 released.
+
+    * Added `process_name` argument to `DaemonContext`: ability to set daemonized process name.
+
 2015-10-30  Alex Honeywell  <alex.honeywell@gmail.com>
 
     Version 2.1.8 released.

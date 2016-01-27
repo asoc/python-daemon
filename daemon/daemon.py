@@ -28,6 +28,8 @@ import six
 import socket
 import sys
 
+from setproctitle import setproctitle
+
 from six.moves import StringIO
 
 
@@ -220,11 +222,19 @@ class DaemonContext(object):
 
             If ``None``, the corresponding system stream is re-bound to the
             file named by `os.devnull`.
+
+        `process_name`
+            :Default: ``None``
+
+            If specified, sets the daemonized process's name (ie. what appears
+            in `ps`)
         """
 
-    def __init__(self, chroot_directory=None, working_directory='/', umask=0, uid=None, gid=None, prevent_core=True,
-            detach_process=None, files_preserve=None, pidfile=None, manage_pidfile=True,
-            stdin=None, stdout=None, stderr=None, signal_map=None):
+    def __init__(self, chroot_directory=None, working_directory='/', umask=0,
+                 uid=None, gid=None, prevent_core=True, detach_process=None,
+                 files_preserve=None, pidfile=None, manage_pidfile=True,
+                 stdin=None, stdout=None, stderr=None, signal_map=None,
+                 process_name=None):
         """ Set up a new instance. """
         self.chroot_directory = chroot_directory
         self.working_directory = working_directory
@@ -236,6 +246,7 @@ class DaemonContext(object):
         self.stdin = stdin
         self.stdout = stdout
         self.stderr = stderr
+        self.process_name = process_name
 
         if uid is None:
             uid = os.getuid()
@@ -335,6 +346,9 @@ class DaemonContext(object):
 
         if self.detach_process:
             detach_process_context()
+
+        if self.process_name:
+            setproctitle(self.process_name)
 
         signal_handler_map = self._make_signal_handler_map()
         set_signal_handlers(signal_handler_map)
