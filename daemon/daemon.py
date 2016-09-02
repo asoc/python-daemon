@@ -34,6 +34,10 @@ from six.moves import StringIO
 
 
 _default_std_info = {
+    'w+': {
+        'attr': 'write',
+        'buffering': -1,
+    },
     'wb+': {
         'attr': 'write',
         'buffering': 0,
@@ -41,7 +45,7 @@ _default_std_info = {
     'r': {
         'attr': 'read',
         'buffering': -1,
-    }
+    },
 }
 
 
@@ -234,7 +238,7 @@ class DaemonContext(object):
                  uid=None, gid=None, prevent_core=True, detach_process=None,
                  files_preserve=None, pidfile=None, manage_pidfile=True,
                  stdin=None, stdout=None, stderr=None, signal_map=None,
-                 process_name=None):
+                 process_name=None, binary_out=True, binary_err=True):
         """ Set up a new instance. """
         self.chroot_directory = chroot_directory
         self.working_directory = working_directory
@@ -247,6 +251,8 @@ class DaemonContext(object):
         self.stdout = stdout
         self.stderr = stderr
         self.process_name = process_name
+        self.binary_out = binary_out
+        self.binary_err = binary_err
 
         if uid is None:
             uid = os.getuid()
@@ -360,8 +366,14 @@ class DaemonContext(object):
 
         same_std_out_err = self.stdout == self.stderr
 
-        self.stdout = set_std(self.stdout, os.devnull, 'wb+')
-        self.stderr = self.stdout if same_std_out_err else set_std(self.stderr, os.devnull, 'wb+')
+        self.stdout = set_std(
+            self.stdout, os.devnull,
+            'wb+' if self.binary_out else 'w+'
+        )
+        self.stderr = self.stdout if same_std_out_err else set_std(
+            self.stderr, os.devnull,
+            'wb+' if self.binary_err else 'w+'
+        )
 
         for std in ['stdin', 'stdout', 'stderr']:
             redirect_stream(std, getattr(self, std))
@@ -419,7 +431,7 @@ class DaemonContext(object):
             try:
                 with open(self.pidfile) as fp:
                     pid = int(fp.read().strip())
-            except (OSError, IOError):
+            except (OSError, IOError, ValueError):
                 return 0
 
         return pid or 0
@@ -435,6 +447,33 @@ class DaemonContext(object):
             return False
 
         return True
+
+    @property
+    def _stale_path(self):
+        if self.pidfile is None:
+            return None
+
+        path = self.pidfile if isinstance(
+            self.pidfile, six.string_types
+        ) else self.pidfile.path
+
+        dirpath, basename = os.path.split(path)
+
+        return os.path.join(dirpath, '.' + basename + '.stale')
+
+    @property
+    def stale(self):
+        if not self.alive:
+            return False
+
+        return os.path.exists(self._stale_path)
+
+    def mark_stale(self):
+        try:
+            with open(self._stale_path, 'w'):
+                pass
+        except (IOError, OSError):
+            pass
 
     def terminate(self, signal_number, stack_frame):
         """ Signal handler for end-process signals.
@@ -651,7 +690,7 @@ def is_process_started_by_superserver():
         attaches it to the standard streams of the child process. If
         that is the case for this process, return ``True``, otherwise
         ``False``.
-    
+
         """
     try:
         stdin_fd = sys.__stdin__.fileno()
@@ -659,6 +698,8 @@ def is_process_started_by_superserver():
             return True
     except ValueError:
         pass
+    except AttributeError:
+        return False
 
     return False
 
@@ -766,7 +807,11 @@ def redirect_stream(name, target_stream):
     if isinstance(getattr(sys, name), StringIO):
         setattr(sys, name, getattr(sys, '__' + name + '__'))
 
-    os.dup2(target_fd, getattr(sys, name).fileno())
+    src_stream = getattr(sys, name)
+    if src_stream is None:
+        os.dup2(target_fd, os.open(os.devnull, os.O_RDWR))
+    else:
+        os.dup2(target_fd, src_stream.fileno())
 
 
 def make_default_signal_map():

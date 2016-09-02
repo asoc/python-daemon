@@ -1,3 +1,11 @@
+2016-09-02  Alex Honeywell  <alex.honeywell@gmail.com>
+
+    Version 2.1.10 released.
+
+    * Added `std` info for `w+` mode
+    * Added `binary_out` and `_err` toggles
+    * Added "stale" state check and related functions/properties.
+
 2016-01-27  Alex Honeywell  <alex.honeywell@gmail.com>
 
     Version 2.1.9 released.

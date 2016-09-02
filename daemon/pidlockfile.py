@@ -149,7 +149,6 @@ def write_pid_to_pidfile(pidfile_path):
     #   ASCII-encoded decimal, followed by a newline character. For
     #   example, if crond was process number 25, /var/run/crond.pid
     #   would contain three characters: two, five, and newline.
-
     try:
         if six.PY2:
             if os.path.exists(pidfile_path):

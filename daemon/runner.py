@@ -92,7 +92,7 @@ class DaemonRunner(object):
         self.pidfile = pidfile
         self.manage_pidfile = manage_pidfile
 
-        if pidfile and manage_pidfile:
+        if self.pidfile and manage_pidfile:
             self.pidfile = make_pidlockfile(pidfile, pidfile_timeout)
 
         self.daemon_context.pidfile = self.pidfile
