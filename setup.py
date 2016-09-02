@@ -52,7 +52,6 @@ setup(
 
     install_requires=[
         'setuptools',
-        'pbr',
         'lockfile >= 0.7',
         'setproctitle',
         'six',
@@ -67,7 +66,6 @@ setup(
     url=URL,
     long_description=__long_desc,
     classifiers=[
-        # Reference: http://pypi.python.org/pypi?%3Aaction=list_classifiers
         'Development Status :: 4 - Beta',
         'License :: OSI Approved :: Python Software Foundation License',
         'Operating System :: POSIX',
