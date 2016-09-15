@@ -3,7 +3,7 @@
 # daemon/__init__.py
 # Part of python-daemon, an implementation of PEP 3143.
 #
-# Copyright © 2014 Alex Honeywell
+# Copyright 2014-2016 Alex Honeywell
 #
 # This is free software: you may copy, modify, and/or distribute this work
 # under the terms of the Python Software Foundation License, version 2 or

@@ -3,8 +3,8 @@
 # setup.py
 # Part of python-daemon, an implementation of PEP 3143.
 #
-# Copyright © 2008–2010 Ben Finney <ben+python@benfinney.id.au>
-# Copyright © 2008 Robert Niederreiter, Jens Klein
+# Copyright 2008-2010 Ben Finney <ben+python@benfinney.id.au>
+# Copyright 2008 Robert Niederreiter, Jens Klein
 #
 # This is free software: you may copy, modify, and/or distribute this work
 # under the terms of the Python Software Foundation License, version 2 or

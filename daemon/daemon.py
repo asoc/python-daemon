@@ -3,13 +3,13 @@
 # daemon/daemon.py
 # Part of python-daemon, an implementation of PEP 3143.
 #
-# Copyright © 2014 Alex Honeywell
-# Copyright © 2008–2010 Ben Finney <ben+python@benfinney.id.au>
-# Copyright © 2007–2008 Robert Niederreiter, Jens Klein
-# Copyright © 2004–2005 Chad J. Schroeder
-# Copyright © 2003 Clark Evans
-# Copyright © 2002 Noah Spurrier
-# Copyright © 2001 Jürgen Hermann
+# Copyright 2014-2016 Alex Honeywell
+# Copyright 2008–2010 Ben Finney <ben+python@benfinney.id.au>
+# Copyright 2007–2008 Robert Niederreiter, Jens Klein
+# Copyright 2004–2005 Chad J. Schroeder
+# Copyright 2003 Clark Evans
+# Copyright 2002 Noah Spurrier
+# Copyright 2001 Jürgen Hermann
 #
 # This is free software: you may copy, modify, and/or distribute this work
 # under the terms of the Python Software Foundation License, version 2 or
